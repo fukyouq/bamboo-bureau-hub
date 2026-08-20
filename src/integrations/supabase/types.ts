@@ -83,13 +83,59 @@ export type Database = {
           },
         ]
       }
-      documents: {
+      document_versions: {
         Row: {
           created_at: string
+          document_id: string
           file_name: string
           file_path: string
           file_type: string
           id: string
+          ocr_text: string | null
+          uploaded_by: string | null
+          version: number
+        }
+        Insert: {
+          created_at?: string
+          document_id: string
+          file_name: string
+          file_path: string
+          file_type: string
+          id?: string
+          ocr_text?: string | null
+          uploaded_by?: string | null
+          version: number
+        }
+        Update: {
+          created_at?: string
+          document_id?: string
+          file_name?: string
+          file_path?: string
+          file_type?: string
+          id?: string
+          ocr_text?: string | null
+          uploaded_by?: string | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_versions_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      documents: {
+        Row: {
+          created_at: string
+          current_version: number
+          file_name: string
+          file_path: string
+          file_type: string
+          id: string
+          ocr_text: string | null
           published_by: string
           publisher_rank: number
           sector_id: string | null
@@ -97,10 +143,12 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          current_version?: number
           file_name: string
           file_path: string
           file_type: string
           id?: string
+          ocr_text?: string | null
           published_by: string
           publisher_rank: number
           sector_id?: string | null
@@ -108,10 +156,12 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          current_version?: number
           file_name?: string
           file_path?: string
           file_type?: string
           id?: string
+          ocr_text?: string | null
           published_by?: string
           publisher_rank?: number
           sector_id?: string | null
@@ -186,18 +236,21 @@ export type Database = {
       }
       roles: {
         Row: {
+          can_publish: boolean
           category: string
           id: number
           name: string
           rank: number
         }
         Insert: {
+          can_publish?: boolean
           category: string
           id: number
           name: string
           rank: number
         }
         Update: {
+          can_publish?: boolean
           category?: string
           id?: number
           name?: string
