@@ -14,13 +14,187 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      document_roles: {
+        Row: {
+          document_id: string
+          role_id: number
+        }
+        Insert: {
+          document_id: string
+          role_id: number
+        }
+        Update: {
+          document_id?: string
+          role_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_roles_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_roles_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "roles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      documents: {
+        Row: {
+          created_at: string
+          file_name: string
+          file_path: string
+          file_type: string
+          id: string
+          published_by: string
+          publisher_rank: number
+          sector_id: string | null
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          file_name: string
+          file_path: string
+          file_type: string
+          id?: string
+          published_by: string
+          publisher_rank: number
+          sector_id?: string | null
+          title: string
+        }
+        Update: {
+          created_at?: string
+          file_name?: string
+          file_path?: string
+          file_type?: string
+          id?: string
+          published_by?: string
+          publisher_rank?: number
+          sector_id?: string | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "documents_sector_id_fkey"
+            columns: ["sector_id"]
+            isOneToOne: false
+            referencedRelation: "sectors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          country_of_birth: string | null
+          created_at: string
+          date_of_birth: string | null
+          email: string
+          full_name: string
+          id: string
+          must_change_password: boolean
+          nationality: string | null
+          race: string | null
+          role_id: number
+          sector_id: string | null
+        }
+        Insert: {
+          country_of_birth?: string | null
+          created_at?: string
+          date_of_birth?: string | null
+          email: string
+          full_name: string
+          id: string
+          must_change_password?: boolean
+          nationality?: string | null
+          race?: string | null
+          role_id: number
+          sector_id?: string | null
+        }
+        Update: {
+          country_of_birth?: string | null
+          created_at?: string
+          date_of_birth?: string | null
+          email?: string
+          full_name?: string
+          id?: string
+          must_change_password?: boolean
+          nationality?: string | null
+          race?: string | null
+          role_id?: number
+          sector_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "roles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_sector_id_fkey"
+            columns: ["sector_id"]
+            isOneToOne: false
+            referencedRelation: "sectors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      roles: {
+        Row: {
+          category: string
+          id: number
+          name: string
+          rank: number
+        }
+        Insert: {
+          category: string
+          id: number
+          name: string
+          rank: number
+        }
+        Update: {
+          category?: string
+          id?: number
+          name?: string
+          rank?: number
+        }
+        Relationships: []
+      }
+      sectors: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      can_view_document: { Args: { _document_id: string }; Returns: boolean }
+      current_rank: { Args: never; Returns: number }
+      has_min_rank: { Args: { _rank: number }; Returns: boolean }
     }
     Enums: {
       [_ in never]: never
