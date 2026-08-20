@@ -30,15 +30,24 @@ function AccountPage() {
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (password.length < 8) return toast.error("Use at least 8 characters");
-    if (password !== confirm) return toast.error("Passwords do not match");
+    if (password.length < 8) {
+      toast.error("Use at least 8 characters");
+      return;
+    }
+    if (password !== confirm) {
+      toast.error("Passwords do not match");
+      return;
+    }
     setLoading(true);
     const { error } = await supabase.auth.updateUser({ password });
     if (!error && profile) {
       await supabase.from("profiles").update({ must_change_password: false }).eq("id", profile.id);
     }
     setLoading(false);
-    if (error) return toast.error(error.message);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
     setPassword("");
     setConfirm("");
     queryClient.invalidateQueries({ queryKey: ["my-profile"] });
