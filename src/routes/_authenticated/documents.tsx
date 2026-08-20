@@ -1,9 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Download, Trash2, Upload } from "lucide-react";
+import { Download, Eye, Search, Trash2, Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,7 +17,13 @@ import {
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useMyProfile, useRoles, useSectors } from "@/hooks/useStaff";
-import { createUploadUrl, getDocumentUrl, deleteDocumentFile } from "@/lib/staff.functions";
+import {
+  createUploadUrl,
+  getDocumentUrl,
+  deleteDocumentFile,
+  recordDocumentUpload,
+} from "@/lib/staff.functions";
+import { DocumentPreview, isPreviewable, type PreviewTarget } from "@/components/DocumentPreview";
 
 export const Route = createFileRoute("/_authenticated/documents")({
   head: () => ({
