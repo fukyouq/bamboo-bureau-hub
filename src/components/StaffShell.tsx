@@ -51,7 +51,9 @@ export function StaffShell({ children }: { children: React.ReactNode }) {
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-5 py-6 md:flex-row">
         <aside className="md:w-60 md:shrink-0">
           <nav className="rounded-lg bg-sidebar p-2 text-sidebar-foreground shadow-elegant">
-            {nav.map(({ to, label, icon: Icon }) => (
+            {nav
+              .filter(({ minRank }) => (profile?.role?.rank ?? 99) <= minRank)
+              .map(({ to, label, icon: Icon }) => (
               <Link
                 key={to}
                 to={to}
