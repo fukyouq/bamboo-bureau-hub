@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
+import { Route as AuthenticatedAuditRouteImport } from './routes/_authenticated/audit'
 import { Route as AuthenticatedDocumentsRouteImport } from './routes/_authenticated/documents'
 import { Route as AuthenticatedHierarchyRouteImport } from './routes/_authenticated/hierarchy'
 import { Route as AuthenticatedUsersRouteImport } from './routes/_authenticated/users'
@@ -28,6 +29,11 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const AuthenticatedAccountRoute = AuthenticatedAccountRouteImport.update({
   id: '/account',
   path: '/account',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedAuditRoute = AuthenticatedAuditRouteImport.update({
+  id: '/audit',
+  path: '/audit',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedDocumentsRoute = AuthenticatedDocumentsRouteImport.update({
@@ -49,6 +55,7 @@ const AuthenticatedUsersRoute = AuthenticatedUsersRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/account': typeof AuthenticatedAccountRoute
+  '/audit': typeof AuthenticatedAuditRoute
   '/documents': typeof AuthenticatedDocumentsRoute
   '/hierarchy': typeof AuthenticatedHierarchyRoute
   '/users': typeof AuthenticatedUsersRoute
@@ -56,6 +63,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/account': typeof AuthenticatedAccountRoute
+  '/audit': typeof AuthenticatedAuditRoute
   '/documents': typeof AuthenticatedDocumentsRoute
   '/hierarchy': typeof AuthenticatedHierarchyRoute
   '/users': typeof AuthenticatedUsersRoute
@@ -65,20 +73,23 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/_authenticated/account': typeof AuthenticatedAccountRoute
+  '/_authenticated/audit': typeof AuthenticatedAuditRoute
   '/_authenticated/documents': typeof AuthenticatedDocumentsRoute
   '/_authenticated/hierarchy': typeof AuthenticatedHierarchyRoute
   '/_authenticated/users': typeof AuthenticatedUsersRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/account' | '/documents' | '/hierarchy' | '/users'
+  fullPaths:
+    '/' | '/account' | '/audit' | '/documents' | '/hierarchy' | '/users'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/account' | '/documents' | '/hierarchy' | '/users'
+  to: '/' | '/account' | '/audit' | '/documents' | '/hierarchy' | '/users'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/_authenticated/account'
+    | '/_authenticated/audit'
     | '/_authenticated/documents'
     | '/_authenticated/hierarchy'
     | '/_authenticated/users'
@@ -112,6 +123,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAccountRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/audit': {
+      id: '/_authenticated/audit'
+      path: '/audit'
+      fullPath: '/audit'
+      preLoaderRoute: typeof AuthenticatedAuditRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/documents': {
       id: '/_authenticated/documents'
       path: '/documents'
@@ -138,6 +156,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAccountRoute: typeof AuthenticatedAccountRoute
+  AuthenticatedAuditRoute: typeof AuthenticatedAuditRoute
   AuthenticatedDocumentsRoute: typeof AuthenticatedDocumentsRoute
   AuthenticatedHierarchyRoute: typeof AuthenticatedHierarchyRoute
   AuthenticatedUsersRoute: typeof AuthenticatedUsersRoute
@@ -145,6 +164,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAccountRoute: AuthenticatedAccountRoute,
+  AuthenticatedAuditRoute: AuthenticatedAuditRoute,
   AuthenticatedDocumentsRoute: AuthenticatedDocumentsRoute,
   AuthenticatedHierarchyRoute: AuthenticatedHierarchyRoute,
   AuthenticatedUsersRoute: AuthenticatedUsersRoute,
