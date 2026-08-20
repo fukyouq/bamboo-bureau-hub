@@ -12,7 +12,9 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
+import { Route as AuthenticatedDocumentsRouteImport } from './routes/_authenticated/documents'
 import { Route as AuthenticatedHierarchyRouteImport } from './routes/_authenticated/hierarchy'
+import { Route as AuthenticatedUsersRouteImport } from './routes/_authenticated/users'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -28,40 +30,58 @@ const AuthenticatedAccountRoute = AuthenticatedAccountRouteImport.update({
   path: '/account',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedDocumentsRoute = AuthenticatedDocumentsRouteImport.update({
+  id: '/documents',
+  path: '/documents',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedHierarchyRoute = AuthenticatedHierarchyRouteImport.update({
   id: '/hierarchy',
   path: '/hierarchy',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedUsersRoute = AuthenticatedUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/account': typeof AuthenticatedAccountRoute
+  '/documents': typeof AuthenticatedDocumentsRoute
   '/hierarchy': typeof AuthenticatedHierarchyRoute
+  '/users': typeof AuthenticatedUsersRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/account': typeof AuthenticatedAccountRoute
+  '/documents': typeof AuthenticatedDocumentsRoute
   '/hierarchy': typeof AuthenticatedHierarchyRoute
+  '/users': typeof AuthenticatedUsersRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/_authenticated/account': typeof AuthenticatedAccountRoute
+  '/_authenticated/documents': typeof AuthenticatedDocumentsRoute
   '/_authenticated/hierarchy': typeof AuthenticatedHierarchyRoute
+  '/_authenticated/users': typeof AuthenticatedUsersRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/account' | '/hierarchy'
+  fullPaths: '/' | '/account' | '/documents' | '/hierarchy' | '/users'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/account' | '/hierarchy'
+  to: '/' | '/account' | '/documents' | '/hierarchy' | '/users'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/_authenticated/account'
+    | '/_authenticated/documents'
     | '/_authenticated/hierarchy'
+    | '/_authenticated/users'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -92,6 +112,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAccountRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/documents': {
+      id: '/_authenticated/documents'
+      path: '/documents'
+      fullPath: '/documents'
+      preLoaderRoute: typeof AuthenticatedDocumentsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/hierarchy': {
       id: '/_authenticated/hierarchy'
       path: '/hierarchy'
@@ -99,17 +126,28 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedHierarchyRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/users': {
+      id: '/_authenticated/users'
+      path: '/users'
+      fullPath: '/users'
+      preLoaderRoute: typeof AuthenticatedUsersRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAccountRoute: typeof AuthenticatedAccountRoute
+  AuthenticatedDocumentsRoute: typeof AuthenticatedDocumentsRoute
   AuthenticatedHierarchyRoute: typeof AuthenticatedHierarchyRoute
+  AuthenticatedUsersRoute: typeof AuthenticatedUsersRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAccountRoute: AuthenticatedAccountRoute,
+  AuthenticatedDocumentsRoute: AuthenticatedDocumentsRoute,
   AuthenticatedHierarchyRoute: AuthenticatedHierarchyRoute,
+  AuthenticatedUsersRoute: AuthenticatedUsersRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
