@@ -134,3 +134,82 @@ export const recordRoleChange = createServerFn({ method: "POST" })
     );
     return { ok: true as const };
   });
+
+export const createUploadUrl = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => z.object({ file_name: z.string().min(1).max(200) }).parse(input))
+  .handler(async ({ data, context }) => {
+    const safe = data.file_name.replace(/[^a-zA-Z0-9._-]/g, "_");
+    const path = `${context.userId}/${crypto.randomUUID()}-${safe}`;
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: signed, error } = await supabaseAdmin.storage
+      .from("documents")
+      .createSignedUploadUrl(path);
+    if (error || !signed) throw new Error(error?.message ?? "Could not prepare the upload");
+    return { path, token: signed.token, signedUrl: signed.signedUrl };
+  });
+
+export const getDocumentUrl = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z
+      .object({
+        document_id: z.string().uuid(),
+        mode: z.enum(["download", "preview"]).default("download"),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    // RLS decides whether this user may see the document at all.
+    const { data: doc, error } = await context.supabase
+      .from("documents")
+      .select("id, title, file_path, file_name, file_type")
+      .eq("id", data.document_id)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!doc) throw new Error("Document not found or not shared with your role");
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: signed, error: signError } = await supabaseAdmin.storage
+      .from("documents")
+      .createSignedUrl(doc.file_path, 600, data.mode === "download" ? { download: doc.file_name } : {});
+    if (signError || !signed) throw new Error(signError?.message ?? "Could not open the document");
+
+    const { logAudit, resolveActor } = await import("./audit.server");
+    await logAudit(
+      {
+        action: data.mode === "download" ? "document.downloaded" : "document.previewed",
+        entity_type: "document",
+        entity_id: doc.id,
+        entity_label: doc.title,
+        actor_id: context.userId,
+        details: { file_type: doc.file_type, file_name: doc.file_name },
+      },
+      await resolveActor(context.supabase, context.userId),
+    );
+    return { url: signed.signedUrl, file_type: doc.file_type, file_name: doc.file_name };
+  });
+
+export const deleteDocumentFile = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z.object({ path: z.string().min(1), title: z.string().max(200).optional() }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    if (!data.path.startsWith(`${context.userId}/`)) await requireRank(context.supabase, 3);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    await supabaseAdmin.storage.from("documents").remove([data.path]);
+
+    const { logAudit, resolveActor } = await import("./audit.server");
+    await logAudit(
+      {
+        action: "document.deleted",
+        entity_type: "document",
+        entity_label: data.title ?? data.path.split("/").pop() ?? null,
+        actor_id: context.userId,
+        details: { path: data.path },
+      },
+      await resolveActor(context.supabase, context.userId),
+    );
+    return { ok: true as const };
+  });
