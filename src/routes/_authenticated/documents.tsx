@@ -285,30 +285,89 @@ function DocumentsPage() {
       <section className="rounded-xl border border-border bg-card p-6 shadow-elegant">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="font-display text-2xl">Registry</h2>
-          <div className="flex items-center gap-2">
-            <Label htmlFor="filter" className="text-sm text-muted-foreground">
-              Sector
-            </Label>
-            <Select value={filterSector} onValueChange={setFilterSector}>
-              <SelectTrigger id="filter" className="w-52">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All sectors</SelectItem>
-                <SelectItem value="none">Company-wide</SelectItem>
-                {sectors.map((s) => (
-                  <SelectItem key={s.id} value={s.id}>
-                    {s.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <p className="text-sm text-muted-foreground">
+            {visible.length} of {documents.length} documents
+          </p>
+        </div>
+
+        <div className="mt-4 space-y-3">
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              className="pl-9"
+              placeholder="Search titles, file names, types or sectors…"
+              aria-label="Search documents"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
           </div>
+          <div className="grid gap-3 sm:grid-cols-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="filter-sector" className="text-xs text-muted-foreground">
+                Sector
+              </Label>
+              <Select value={filterSector} onValueChange={setFilterSector}>
+                <SelectTrigger id="filter-sector">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All sectors</SelectItem>
+                  <SelectItem value="none">Company-wide</SelectItem>
+                  {sectors.map((s) => (
+                    <SelectItem key={s.id} value={s.id}>
+                      {s.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="filter-role" className="text-xs text-muted-foreground">
+                Visible to role
+              </Label>
+              <Select value={filterRole} onValueChange={setFilterRole}>
+                <SelectTrigger id="filter-role">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Any role</SelectItem>
+                  {roles.map((r) => (
+                    <SelectItem key={r.id} value={String(r.id)}>
+                      {r.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="filter-type" className="text-xs text-muted-foreground">
+                Document type
+              </Label>
+              <Select value={filterType} onValueChange={setFilterType}>
+                <SelectTrigger id="filter-type">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All types</SelectItem>
+                  {types.map((t) => (
+                    <SelectItem key={t} value={t}>
+                      {t.toUpperCase()}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          {filtersActive && (
+            <Button variant="ghost" size="sm" onClick={clearFilters}>
+              <X className="size-4" /> Clear filters
+            </Button>
+          )}
         </div>
 
         <div className="mt-5 space-y-3">
           {visible.length === 0 && (
-            <p className="text-sm text-muted-foreground">No documents available for your role yet.</p>
+            <p className="text-sm text-muted-foreground">No documents match your search or filters.</p>
           )}
           {visible.map((doc) => (
             <div
@@ -324,15 +383,27 @@ function DocumentsPage() {
                 </p>
               </div>
               <div className="flex items-center gap-2">
-                <Button size="sm" variant="secondary" onClick={() => open.mutate(doc.id)}>
-                  <Download className="size-4" /> Open
+                {isPreviewable(doc.file_type) && (
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    disabled={openPreview.isPending}
+                    onClick={() => openPreview.mutate({ id: doc.id, title: doc.title })}
+                  >
+                    <Eye className="size-4" /> Preview
+                  </Button>
+                )}
+                <Button size="sm" variant="outline" onClick={() => download.mutate(doc.id)}>
+                  <Download className="size-4" /> Download
                 </Button>
                 {(doc.published_by === profile?.id || myRank <= 3) && (
                   <Button
                     size="icon"
                     variant="ghost"
                     aria-label={`Delete ${doc.title}`}
-                    onClick={() => remove.mutate({ id: doc.id, file_path: doc.file_path })}
+                    onClick={() =>
+                      remove.mutate({ id: doc.id, file_path: doc.file_path, title: doc.title })
+                    }
                   >
                     <Trash2 className="size-4 text-destructive" />
                   </Button>
@@ -342,6 +413,15 @@ function DocumentsPage() {
           ))}
         </div>
       </section>
+
+      <DocumentPreview
+        target={preview}
+        onOpenChange={(open) => !open && setPreview(null)}
+        onDownload={() => {
+          const current = visible.find((d) => d.title === preview?.title);
+          if (current) download.mutate(current.id);
+        }}
+      />
     </div>
   );
 }
