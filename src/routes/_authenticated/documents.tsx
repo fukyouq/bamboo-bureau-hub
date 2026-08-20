@@ -56,12 +56,18 @@ function DocumentsPage() {
   const documentUrlFn = useServerFn(getDocumentUrl);
   const deleteFileFn = useServerFn(deleteDocumentFile);
 
+  const uploadAuditFn = useServerFn(recordDocumentUpload);
+
   const [filterSector, setFilterSector] = useState<string>("all");
+  const [filterRole, setFilterRole] = useState<string>("all");
+  const [filterType, setFilterType] = useState<string>("all");
+  const [search, setSearch] = useState("");
   const [title, setTitle] = useState("");
   const [sectorId, setSectorId] = useState<string>("none");
   const [file, setFile] = useState<File | null>(null);
   const [selectedRoles, setSelectedRoles] = useState<number[]>([]);
   const [uploading, setUploading] = useState(false);
+  const [preview, setPreview] = useState<PreviewTarget | null>(null);
 
   const myRank = profile?.role?.rank ?? 99;
   const shareableRoles = roles.filter((r) => r.rank > myRank);
@@ -80,9 +86,36 @@ function DocumentsPage() {
     },
   });
 
-  const visible = documents.filter((d) =>
-    filterSector === "all" ? true : filterSector === "none" ? !d.sector_id : d.sector_id === filterSector,
+  const types = useMemo(
+    () => Array.from(new Set(documents.map((d) => d.file_type.toLowerCase()))).sort(),
+    [documents],
   );
+
+  const query = search.trim().toLowerCase();
+  const visible = documents.filter((d) => {
+    const sectorOk =
+      filterSector === "all" ? true : filterSector === "none" ? !d.sector_id : d.sector_id === filterSector;
+    const typeOk = filterType === "all" || d.file_type.toLowerCase() === filterType;
+    const sharedIds = (d.document_roles ?? []).map((r) => r.role_id);
+    const publisherRoleRanks = roles.filter((r) => r.rank <= d.publisher_rank).map((r) => r.id);
+    const roleOk =
+      filterRole === "all" ||
+      sharedIds.includes(Number(filterRole)) ||
+      publisherRoleRanks.includes(Number(filterRole));
+    const sectorName = sectors.find((s) => s.id === d.sector_id)?.name ?? "Company-wide";
+    const haystack = `${d.title} ${d.file_name} ${d.file_type} ${sectorName}`.toLowerCase();
+    return sectorOk && typeOk && roleOk && (query === "" || haystack.includes(query));
+  });
+
+  const filtersActive =
+    query !== "" || filterSector !== "all" || filterRole !== "all" || filterType !== "all";
+
+  function clearFilters() {
+    setSearch("");
+    setFilterSector("all");
+    setFilterRole("all");
+    setFilterType("all");
+  }
 
   async function onUpload(e: React.FormEvent) {
     e.preventDefault();
@@ -99,10 +132,11 @@ function DocumentsPage() {
         .uploadToSignedUrl(path, token, file);
       if (uploadError) throw uploadError;
 
+      const docTitle = title.trim() || file.name;
       const { data: inserted, error } = await supabase
         .from("documents")
         .insert({
-          title: title.trim() || file.name,
+          title: docTitle,
           file_path: path,
           file_name: file.name,
           file_type: extOf(file.name),
@@ -121,12 +155,23 @@ function DocumentsPage() {
         if (roleError) throw roleError;
       }
 
+      await uploadAuditFn({
+        data: {
+          document_id: inserted.id,
+          title: docTitle,
+          file_type: extOf(file.name),
+          sector_id: sectorId === "none" ? null : sectorId,
+          role_ids: selectedRoles,
+        },
+      });
+
       setTitle("");
       setFile(null);
       setSelectedRoles([]);
       setSectorId("none");
       toast.success("Document published");
       queryClient.invalidateQueries({ queryKey: ["documents"] });
+      queryClient.invalidateQueries({ queryKey: ["audit-events"] });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Upload failed");
     } finally {
@@ -134,21 +179,32 @@ function DocumentsPage() {
     }
   }
 
-  const open = useMutation({
-    mutationFn: async (id: string) => documentUrlFn({ data: { document_id: id } }),
+  const download = useMutation({
+    mutationFn: async (id: string) => documentUrlFn({ data: { document_id: id, mode: "download" } }),
     onSuccess: ({ url }) => window.open(url, "_blank", "noopener"),
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const openPreview = useMutation({
+    mutationFn: async (doc: { id: string; title: string }) => {
+      const res = await documentUrlFn({ data: { document_id: doc.id, mode: "preview" } });
+      return { ...res, title: doc.title };
+    },
+    onSuccess: (res) =>
+      setPreview({ title: res.title, url: res.url, file_type: res.file_type, file_name: res.file_name }),
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   const remove = useMutation({
-    mutationFn: async (doc: { id: string; file_path: string }) => {
+    mutationFn: async (doc: { id: string; file_path: string; title: string }) => {
       const { error } = await supabase.from("documents").delete().eq("id", doc.id);
       if (error) throw error;
-      await deleteFileFn({ data: { path: doc.file_path } });
+      await deleteFileFn({ data: { path: doc.file_path, title: doc.title } });
     },
     onSuccess: () => {
       toast.success("Document deleted");
       queryClient.invalidateQueries({ queryKey: ["documents"] });
+      queryClient.invalidateQueries({ queryKey: ["audit-events"] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
