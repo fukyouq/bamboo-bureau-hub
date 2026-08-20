@@ -1,16 +1,17 @@
 import { Link, useNavigate, useLocation } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
-import { FolderTree, Files, Users, LogOut, KeyRound } from "lucide-react";
+import { FolderTree, Files, Users, LogOut, KeyRound, ShieldCheck } from "lucide-react";
 import { StaffHeader } from "./StaffHeader";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useMyProfile } from "@/hooks/useStaff";
 
 const nav = [
-  { to: "/hierarchy", label: "Hierarchy", icon: FolderTree },
-  { to: "/documents", label: "Document Registry", icon: Files },
-  { to: "/users", label: "Users", icon: Users },
+  { to: "/hierarchy", label: "Hierarchy", icon: FolderTree, minRank: 99 },
+  { to: "/documents", label: "Document Registry", icon: Files, minRank: 99 },
+  { to: "/users", label: "Users", icon: Users, minRank: 99 },
+  { to: "/audit", label: "Audit Trail", icon: ShieldCheck, minRank: 6 },
 ] as const;
 
 export function StaffShell({ children }: { children: React.ReactNode }) {
