@@ -1,5 +1,6 @@
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate, useLocation } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { FolderTree, Files, Users, LogOut, KeyRound } from "lucide-react";
 import { StaffHeader } from "./StaffHeader";
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,13 @@ export function StaffShell({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { data: profile } = useMyProfile();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (profile?.must_change_password && location.pathname !== "/account") {
+      navigate({ to: "/account", replace: true });
+    }
+  }, [profile?.must_change_password, location.pathname, navigate]);
 
   async function signOut() {
     await queryClient.cancelQueries();
