@@ -177,6 +177,63 @@ export type Database = {
           },
         ]
       }
+      interviews: {
+        Row: {
+          candidate_name: string
+          created_at: string
+          created_by: string
+          date_of_birth: string | null
+          decided_at: string | null
+          decided_by: string | null
+          id: string
+          notes: string | null
+          position_role_id: number
+          sector_id: string | null
+          status: string
+        }
+        Insert: {
+          candidate_name: string
+          created_at?: string
+          created_by: string
+          date_of_birth?: string | null
+          decided_at?: string | null
+          decided_by?: string | null
+          id?: string
+          notes?: string | null
+          position_role_id: number
+          sector_id?: string | null
+          status?: string
+        }
+        Update: {
+          candidate_name?: string
+          created_at?: string
+          created_by?: string
+          date_of_birth?: string | null
+          decided_at?: string | null
+          decided_by?: string | null
+          id?: string
+          notes?: string | null
+          position_role_id?: number
+          sector_id?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "interviews_position_role_id_fkey"
+            columns: ["position_role_id"]
+            isOneToOne: false
+            referencedRelation: "roles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "interviews_sector_id_fkey"
+            columns: ["sector_id"]
+            isOneToOne: false
+            referencedRelation: "sectors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           country_of_birth: string | null
@@ -278,6 +335,62 @@ export type Database = {
           name?: string
         }
         Relationships: []
+      }
+      vacation_requests: {
+        Row: {
+          created_at: string
+          days: number
+          decided_at: string | null
+          decided_by: string | null
+          decision_note: string | null
+          end_date: string
+          id: string
+          is_medical: boolean
+          reason: string | null
+          requester_id: string
+          sector_id: string | null
+          start_date: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          days: number
+          decided_at?: string | null
+          decided_by?: string | null
+          decision_note?: string | null
+          end_date: string
+          id?: string
+          is_medical?: boolean
+          reason?: string | null
+          requester_id: string
+          sector_id?: string | null
+          start_date: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          days?: number
+          decided_at?: string | null
+          decided_by?: string | null
+          decision_note?: string | null
+          end_date?: string
+          id?: string
+          is_medical?: boolean
+          reason?: string | null
+          requester_id?: string
+          sector_id?: string | null
+          start_date?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vacation_requests_sector_id_fkey"
+            columns: ["sector_id"]
+            isOneToOne: false
+            referencedRelation: "sectors"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
