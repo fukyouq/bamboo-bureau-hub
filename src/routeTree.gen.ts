@@ -17,6 +17,7 @@ import { Route as AuthenticatedDocumentsRouteImport } from './routes/_authentica
 import { Route as AuthenticatedHierarchyRouteImport } from './routes/_authenticated/hierarchy'
 import { Route as AuthenticatedInterviewsRouteImport } from './routes/_authenticated/interviews'
 import { Route as AuthenticatedUsersRouteImport } from './routes/_authenticated/users'
+import { Route as AuthenticatedVacationsRouteImport } from './routes/_authenticated/vacations'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -57,6 +58,11 @@ const AuthenticatedUsersRoute = AuthenticatedUsersRouteImport.update({
   path: '/users',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedVacationsRoute = AuthenticatedVacationsRouteImport.update({
+  id: '/vacations',
+  path: '/vacations',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -66,6 +72,7 @@ export interface FileRoutesByFullPath {
   '/hierarchy': typeof AuthenticatedHierarchyRoute
   '/interviews': typeof AuthenticatedInterviewsRoute
   '/users': typeof AuthenticatedUsersRoute
+  '/vacations': typeof AuthenticatedVacationsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -75,6 +82,7 @@ export interface FileRoutesByTo {
   '/hierarchy': typeof AuthenticatedHierarchyRoute
   '/interviews': typeof AuthenticatedInterviewsRoute
   '/users': typeof AuthenticatedUsersRoute
+  '/vacations': typeof AuthenticatedVacationsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -86,6 +94,7 @@ export interface FileRoutesById {
   '/_authenticated/hierarchy': typeof AuthenticatedHierarchyRoute
   '/_authenticated/interviews': typeof AuthenticatedInterviewsRoute
   '/_authenticated/users': typeof AuthenticatedUsersRoute
+  '/_authenticated/vacations': typeof AuthenticatedVacationsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -97,6 +106,7 @@ export interface FileRouteTypes {
     | '/hierarchy'
     | '/interviews'
     | '/users'
+    | '/vacations'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -106,6 +116,7 @@ export interface FileRouteTypes {
     | '/hierarchy'
     | '/interviews'
     | '/users'
+    | '/vacations'
   id:
     | '__root__'
     | '/'
@@ -116,6 +127,7 @@ export interface FileRouteTypes {
     | '/_authenticated/hierarchy'
     | '/_authenticated/interviews'
     | '/_authenticated/users'
+    | '/_authenticated/vacations'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -181,6 +193,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedUsersRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/vacations': {
+      id: '/_authenticated/vacations'
+      path: '/vacations'
+      fullPath: '/vacations'
+      preLoaderRoute: typeof AuthenticatedVacationsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -191,6 +210,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedHierarchyRoute: typeof AuthenticatedHierarchyRoute
   AuthenticatedInterviewsRoute: typeof AuthenticatedInterviewsRoute
   AuthenticatedUsersRoute: typeof AuthenticatedUsersRoute
+  AuthenticatedVacationsRoute: typeof AuthenticatedVacationsRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -200,6 +220,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedHierarchyRoute: AuthenticatedHierarchyRoute,
   AuthenticatedInterviewsRoute: AuthenticatedInterviewsRoute,
   AuthenticatedUsersRoute: AuthenticatedUsersRoute,
+  AuthenticatedVacationsRoute: AuthenticatedVacationsRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
